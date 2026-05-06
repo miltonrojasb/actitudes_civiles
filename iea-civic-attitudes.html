@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Actitudes Cívicas - IEA Civic Education Study</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #e9ff70 0%, #ffd670 25%, #ff9770 50%, #ff70a6 75%, #70d6ff 100%);
+            color: #2c3e50;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #ff70a6;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(255, 112, 166, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #ff70a6;
+            font-size: 28px;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 8px rgba(255, 112, 166, 0.15);
+        }
+        
+        .subtitle {
+            color: #70d6ff;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .progress-container {
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #70d6ff;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff70a6, #ff9770, #ffd670, #e9ff70, #70d6ff);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 112, 166, 0.3);
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: #70d6ff;
+            font-size: 12px;
+            margin-top: 8px;
+            font-weight: 600;
+        }
+        
+        .test-container {
+            display: none;
+        }
+        
+        .test-container.active {
+            display: block;
+        }
+        
+        .question-card {
+            background: linear-gradient(135deg, rgba(112, 214, 255, 0.08), rgba(233, 255, 112, 0.08));
+            border: 2px solid #70d6ff;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .question-title {
+            color: #ff70a6;
+            font-size: 16px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .question-text {
+            color: #2c3e50;
+            font-size: 15px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+        
+        .scale-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+        }
+        
+        .scale-btn {
+            padding: 12px 8px;
+            border: 2px solid #ffd670;
+            background: linear-gradient(135deg, rgba(255, 214, 112, 0.15), rgba(233, 255, 112, 0.1));
+            color: #ff9770;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+        
+        .scale-btn:hover {
+            background: linear-gradient(135deg, rgba(255, 214, 112, 0.3), rgba(233, 255, 112, 0.2));
+            box-shadow: 0 0 15px rgba(255, 214, 112, 0.4);
+            transform: translateY(-2px);
+            border-color: #ff70a6;
+        }
+        
+        .scale-btn.selected {
+            background: linear-gradient(135deg, #ff70a6, #ff9770);
+            color: white;
+            border-color: #ff70a6;
+            box-shadow: 0 0 20px rgba(255, 112, 166, 0.5);
+            font-weight: bold;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: space-between;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: 2px solid #70d6ff;
+            background: linear-gradient(135deg, rgba(112, 214, 255, 0.15), rgba(255, 214, 112, 0.1));
+            color: #70d6ff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, rgba(112, 214, 255, 0.3), rgba(255, 214, 112, 0.2));
+            box-shadow: 0 0 15px rgba(112, 214, 255, 0.3);
+        }
+        
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .results-container {
+            display: none;
+        }
+        
+        .results-container.active {
+            display: block;
+        }
+        
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .result-title {
+            color: #ff70a6;
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .result-subtitle {
+            color: #ff9770;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .scales-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .scale-result {
+            background: linear-gradient(135deg, rgba(255, 214, 112, 0.1), rgba(112, 214, 255, 0.1));
+            border: 2px solid #ffd670;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .scale-name {
+            color: #ff70a6;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .scale-score {
+            font-size: 32px;
+            color: #ff9770;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .scale-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            border: 1px solid #ffd670;
+        }
+        
+        .scale-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff70a6, #ff9770, #ffd670);
+            transition: width 0.3s ease;
+        }
+        
+        .scale-interpretation {
+            color: #555;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .radar-container {
+            background: linear-gradient(135deg, rgba(112, 214, 255, 0.08), rgba(233, 255, 112, 0.08));
+            border: 2px solid #70d6ff;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .radar-canvas {
+            max-width: 100%;
+            max-height: 350px;
+        }
+        
+        .download-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ff70a6, #ff9770);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .download-btn:hover {
+            box-shadow: 0 0 25px rgba(255, 112, 166, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .restart-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, rgba(112, 214, 255, 0.15), rgba(255, 214, 112, 0.1));
+        }
+        
+        .scale-info {
+            background: linear-gradient(135deg, rgba(112, 214, 255, 0.1), rgba(233, 255, 112, 0.1));
+            border-left: 3px solid #70d6ff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #444;
+            line-height: 1.6;
+        }
+        
+        #resultsContent {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏛️ Actitudes Cívicas</h1>
+            <p class="subtitle">Test de Educación Cívica - IEA Civic Education Study</p>
+        </header>
+
+        <!-- TEST CONTAINER -->
+        <div class="test-container active">
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text"><span id="currentQuestion">1</span> de <span id="totalQuestions">24</span> preguntas</div>
+            </div>
+
+            <div id="questionsContainer"></div>
+
+            <div class="nav-buttons">
+                <button id="prevBtn" onclick="previousQuestion()" disabled>← Anterior</button>
+                <button id="nextBtn" onclick="nextQuestion()">Siguiente →</button>
+            </div>
+        </div>
+
+        <!-- RESULTS CONTAINER -->
+        <div class="results-container" id="resultsContainer">
+            <div id="resultsContent">
+                <div class="result-header">
+                    <div class="result-title">✓ Tu Perfil Cívico</div>
+                    <div class="result-subtitle">Resultados basados en IEA Civic Education Study (CIVED)</div>
+                </div>
+
+                <div class="scale-info">
+                    Este test mide tus actitudes hacia aspectos fundamentales de la ciudadanía: respeto a derechos de minorías, 
+                    participación cívica, confianza institucional y responsabilidad social. Basado en investigación internacional 
+                    de la IEA (International Association for the Evaluation of Educational Achievement).
+                </div>
+
+                <div class="radar-container">
+                    <canvas id="radarChart" class="radar-canvas"></canvas>
+                </div>
+
+                <div class="scales-grid" id="scalesResults"></div>
+
+                <button class="download-btn" onclick="downloadResults()">⬇️ Descargar Resultados</button>
+                <button class="restart-btn" onclick="restartTest()">Reiniciar Test</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data structure with all 24 questions from IEA CIVED
+        const questions = [
+            {
+                text: "¿Crees que los migrantes que viven en este país deberían tener los mismos derechos a educación que los ciudadanos?",
+                scale: "Derechos de Migrantes"
+            },
+            {
+                text: "¿Es importante que se les enseñe a los jóvenes a respetar a personas de diferentes orígenes étnicos?",
+                scale: "Derechos de Minorías"
+            },
+            {
+                text: "¿Las mujeres deberían tener las mismas oportunidades de empleo que los hombres?",
+                scale: "Derechos de Mujeres"
+            },
+            {
+                text: "¿Es responsabilidad de un buen ciudadano votar en las elecciones?",
+                scale: "Responsabilidad Cívica"
+            },
+            {
+                text: "¿Crees que es importante estar informado sobre noticias nacionales e internacionales?",
+                scale: "Participación Informada"
+            },
+            {
+                text: "¿Los migrantes deberían tener iguales oportunidades de empleo que los ciudadanos?",
+                scale: "Derechos de Migrantes"
+            },
+            {
+                text: "¿Confías en el parlamento/congreso de tu país para tomar decisiones correctas?",
+                scale: "Confianza Institucional"
+            },
+            {
+                text: "¿Las mujeres deberían participar activamente en política y gobierno?",
+                scale: "Derechos de Mujeres"
+            },
+            {
+                text: "¿Es importante que los jóvenes participen en decisiones de su comunidad?",
+                scale: "Participación Cívica"
+            },
+            {
+                text: "¿Crees que un buen ciudadano debe estar dispuesto a proteger derechos de minorías?",
+                scale: "Responsabilidad Cívica"
+            },
+            {
+                text: "¿Confías en que los tribunales de justicia tomen decisiones justas?",
+                scale: "Confianza Institucional"
+            },
+            {
+                text: "¿Los migrantes deberían tener derecho a participar en procesos electorales después de X años?",
+                scale: "Derechos de Migrantes"
+            },
+            {
+                text: "¿Es importante cuestionar decisiones del gobierno cuando consideras que son injustas?",
+                scale: "Participación Cívica"
+            },
+            {
+                text: "¿Las mujeres y hombres deberían tener igual salario por el mismo trabajo?",
+                scale: "Derechos de Mujeres"
+            },
+            {
+                text: "¿Confías en los medios de comunicación para dar información imparcial?",
+                scale: "Confianza Institucional"
+            },
+            {
+                text: "¿Crees que debo participar en actividades de voluntariado comunitario?",
+                scale: "Participación Cívica"
+            },
+            {
+                text: "¿Un buen ciudadano debe respetar las leyes incluso si no está de acuerdo con ellas?",
+                scale: "Responsabilidad Cívica"
+            },
+            {
+                text: "¿Las personas de diferentes religiones merecen igual trato y respeto en la sociedad?",
+                scale: "Derechos de Minorías"
+            },
+            {
+                text: "¿Es deber de un ciudadano ayudar a otros que están en situación de vulnerabilidad?",
+                scale: "Responsabilidad Cívica"
+            },
+            {
+                text: "¿Las voces de los jóvenes deberían ser escuchadas en decisiones políticas?",
+                scale: "Participación Cívica"
+            },
+            {
+                text: "¿Crees que los derechos de los migrantes son respetados en tu país?",
+                scale: "Derechos de Migrantes"
+            },
+            {
+                text: "¿Es importante ser miembro activo de asociaciones o grupos comunitarios?",
+                scale: "Participación Cívica"
+            },
+            {
+                text: "¿Confías en que la policía actúe de manera justa con todos los ciudadanos?",
+                scale: "Confianza Institucional"
+            },
+            {
+                text: "¿Deberían protegerse los derechos de personas LGBTQ+ en la misma medida que otros ciudadanos?",
+                scale: "Derechos de Minorías"
+            }
+        ];
+
+        const scales = {
+            "Derechos de Migrantes": { color: "#ff70a6", items: [] },
+            "Derechos de Minorías": { color: "#70d6ff", items: [] },
+            "Derechos de Mujeres": { color: "#ffd670", items: [] },
+            "Responsabilidad Cívica": { color: "#ff9770", items: [] },
+            "Participación Informada": { color: "#e9ff70", items: [] },
+            "Participación Cívica": { color: "#ff9770", items: [] },
+            "Confianza Institucional": { color: "#70d6ff", items: [] }
+        };
+
+        let currentQuestion = 0;
+        let answers = new Array(questions.length).fill(null);
+
+        // Initialize question indices for each scale
+        Object.keys(scales).forEach((scaleName, idx) => {
+            scales[scaleName].items = questions
+                .map((q, i) => q.scale === scaleName ? i : -1)
+                .filter(i => i !== -1);
+        });
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+
+            const q = questions[currentQuestion];
+            const qNumber = currentQuestion + 1;
+
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.innerHTML = `
+                <div class="question-title">Pregunta ${qNumber}</div>
+                <div class="question-text">${q.text}</div>
+                <div class="scale-options" id="optionsContainer">
+                    <button class="scale-btn" onclick="answerQuestion(4)">Totalmente de acuerdo</button>
+                    <button class="scale-btn" onclick="answerQuestion(3)">De acuerdo</button>
+                    <button class="scale-btn" onclick="answerQuestion(2)">Neutral</button>
+                    <button class="scale-btn" onclick="answerQuestion(1)">En desacuerdo</button>
+                    <button class="scale-btn" onclick="answerQuestion(0)">Totalmente en desacuerdo</button>
+                </div>
+            `;
+            container.appendChild(card);
+
+            // Highlight selected answer if exists
+            if (answers[currentQuestion] !== null) {
+                const btns = document.querySelectorAll('.scale-btn');
+                btns[4 - answers[currentQuestion]].classList.add('selected');
+            }
+
+            updateProgress();
+            updateNavButtons();
+        }
+
+        function answerQuestion(value) {
+            answers[currentQuestion] = value;
+            const btns = document.querySelectorAll('.scale-btn');
+            btns.forEach(btn => btn.classList.remove('selected'));
+            btns[4 - value].classList.add('selected');
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                renderQuestions();
+            } else {
+                showResults();
+            }
+        }
+
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestions();
+            }
+        }
+
+        function updateProgress() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('currentQuestion').textContent = currentQuestion + 1;
+            document.getElementById('totalQuestions').textContent = questions.length;
+        }
+
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentQuestion === 0;
+            const nextBtn = document.getElementById('nextBtn');
+            if (currentQuestion === questions.length - 1) {
+                nextBtn.textContent = 'Ver Resultados →';
+            } else {
+                nextBtn.textContent = 'Siguiente →';
+            }
+        }
+
+        function calculateScores() {
+            const scores = {};
+            Object.keys(scales).forEach(scaleName => {
+                const items = scales[scaleName].items;
+                const scaleAnswers = items.map(i => answers[i] || 0);
+                const total = scaleAnswers.reduce((a, b) => a + b, 0);
+                const average = items.length > 0 ? (total / items.length / 4) * 100 : 0;
+                scores[scaleName] = Math.round(average);
+            });
+            return scores;
+        }
+
+        function showResults() {
+            document.querySelector('.test-container').classList.remove('active');
+            document.getElementById('resultsContainer').classList.add('active');
+
+            const scores = calculateScores();
+            renderScaleResults(scores);
+            renderRadarChart(scores);
+        }
+
+        function renderScaleResults(scores) {
+            const container = document.getElementById('scalesResults');
+            container.innerHTML = '';
+
+            Object.keys(scores).forEach(scaleName => {
+                const score = scores[scaleName];
+                const color = scales[scaleName].color;
+                let interpretation = '';
+
+                if (score >= 75) {
+                    interpretation = 'Actitud muy positiva hacia esta dimensión cívica';
+                } else if (score >= 50) {
+                    interpretation = 'Actitud positiva, con espacio para desarrollo';
+                } else if (score >= 25) {
+                    interpretation = 'Actitud moderada, considera reflexionar más';
+                } else {
+                    interpretation = 'Actitud a desarrollar en esta área';
+                }
+
+                const card = document.createElement('div');
+                card.className = 'scale-result';
+                card.innerHTML = `
+                    <div class="scale-name" style="color: ${color};">${scaleName}</div>
+                    <div class="scale-score" style="color: ${color};">${score}%</div>
+                    <div class="scale-bar">
+                        <div class="scale-bar-fill" style="width: ${score}%; background: ${color};"></div>
+                    </div>
+                    <div class="scale-interpretation">${interpretation}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderRadarChart(scores) {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            const labels = Object.keys(scores);
+            const data = Object.values(scores);
+            const colors = labels.map(label => scales[label].color);
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Tu Perfil',
+                        data: data,
+                        borderColor: '#ff70a6',
+                        backgroundColor: 'rgba(255, 112, 166, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 5,
+                        pointBackgroundColor: colors,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: '#666',
+                                font: { family: "'Courier New', monospace" }
+                            },
+                            grid: { color: 'rgba(112, 214, 255, 0.2)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#ff70a6',
+                            bodyColor: '#2c3e50',
+                            borderColor: 'rgba(112, 214, 255, 0.5)',
+                            borderWidth: 1,
+                            padding: 12,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + Math.round(context.raw) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function downloadResults() {
+            const scores = calculateScores();
+            const element = document.getElementById('resultsContent');
+            
+            html2canvas(element, {
+                backgroundColor: '#ffffff',
+                scale: 2
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                link.download = `actitudes-civicas-${new Date().toISOString().split('T')[0]}.png`;
+                link.click();
+            });
+        }
+
+        function restartTest() {
+            currentQuestion = 0;
+            answers = new Array(questions.length).fill(null);
+            document.querySelector('.test-container').classList.add('active');
+            document.getElementById('resultsContainer').classList.remove('active');
+            renderQuestions();
+        }
+
+        // Initialize
+        document.getElementById('totalQuestions').textContent = questions.length;
+        renderQuestions();
+    </script>
+</body>
+</html>
